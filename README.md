@@ -1,27 +1,17 @@
 # ember-state
 
-This README outlines the details of collaborating on this Ember addon.
+An [ember-cli addon](http://www.ember-cli.com/) with a State service that manage browser history navigation.
 
-## Installation
+## Install in ember-cli application
 
-* `git clone <repository-url>` this repository
-* `cd ember-state`
-* `npm install`
-* `bower install`
+In your application's directory:
 
-## Running
+    ember install ember-state
 
-* `ember serve`
-* Visit your app at [http://localhost:4200](http://localhost:4200).
+## Usage
 
-## Running Tests
+TBW
 
-* `npm test` (Runs `ember try:each` to test your addon against multiple Ember versions)
-* `ember test`
-* `ember test --server`
+## Contribute
 
-## Building
-
-* `ember build`
-
-For more information on using ember-cli, visit [https://ember-cli.com/](https://ember-cli.com/).
+If you want to contribute to this addon, please read the [CONTRIBUTING.md](CONTRIBUTING.md).
