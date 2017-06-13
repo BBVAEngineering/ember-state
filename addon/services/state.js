@@ -1,10 +1,5 @@
 /* eslint-disable max-statements */
 
-/**
- * @module buzz-core
- * @module buzz-core-services
- */
-
 import Ember from 'ember';
 
 /**
@@ -12,10 +7,7 @@ import Ember from 'ember';
  *
  * When browser navigates it emits events `forward` and `back`.
  *
- * @namespace BuzzCore
- * @class StateService
  * @extends Ember.Service
- * @public
  */
 export default Ember.Service.extend(Ember.Evented, {
 
