@@ -19,7 +19,26 @@ In your application's directory:
 
 ## Usage
 
-TBW
+This service is to store all history states.
+We can access to the following states:
+
+- current.
+
+- previous.
+
+- next.
+
+- last.
+
+Example:
+
+```javascript
+state: inject.service(),
+
+state.get('current.index');
+state.get('previous.index');
+
+```
 
 ## Contribute
 
