@@ -1,6 +1,12 @@
 /* eslint-disable max-statements */
-
-import Ember from 'ember';
+import Service from '@ember/service';
+import Evented from '@ember/object/evented';
+import { computed } from '@ember/object';
+import { A } from '@ember/array';
+import { getOwner } from '@ember/application';
+import $ from 'jquery';
+import { assert } from '@ember/debug';
+import { isNone } from '@ember/utils';
 
 /**
  * State service that manage browser history navigation.
@@ -9,7 +15,7 @@ import Ember from 'ember';
  *
  * @extends Ember.Service
  */
-export default Ember.Service.extend(Ember.Evented, {
+export default Service.extend(Evented, {
 
 	/**
 	 * Array with all history states.
@@ -33,7 +39,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @property states
 	 * @type Array
 	 */
-	states: Ember.computed.sort('content', 'contentSorting'),
+	states: computed.sort('content', 'contentSorting'),
 
 	/**
 	 * Pointer to the current state.
@@ -49,7 +55,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @property isEnabled
 	 * @return Boolean
 	 */
-	isEnabled: Ember.computed(() => {
+	isEnabled: computed(() => {
 		const userAgent = window.navigator.userAgent;
 
 		return !userAgent.match(/CriOS/);
@@ -61,7 +67,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @property next
 	 * @type Object
 	 */
-	next: Ember.computed('content.[]', 'pointer', function() {
+	next: computed('content.[]', 'pointer', function() {
 		const pointer = this.get('pointer') + 1;
 
 		return this.get('content').findBy('index', pointer);
@@ -73,7 +79,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @property current
 	 * @type Object
 	 */
-	current: Ember.computed('content.[]', 'pointer', function() {
+	current: computed('content.[]', 'pointer', function() {
 		const pointer = this.get('pointer');
 
 		return this.get('content').findBy('index', pointer);
@@ -85,7 +91,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @property previous
 	 * @type Object
 	 */
-	previous: Ember.computed('content.[]', 'pointer', function() {
+	previous: computed('content.[]', 'pointer', function() {
 		const pointer = this.get('pointer') - 1;
 
 		return this.get('content').findBy('index', pointer);
@@ -107,14 +113,14 @@ export default Ember.Service.extend(Ember.Evented, {
 	init(...args) {
 		this._super(...args);
 
-		this.set('content', Ember.A());
+		this.set('content', A());
 
 		if (this.get('isEnabled')) {
 			this._updatePointer();
 
-			Ember.$(window).on('popstate', this.get('_popstateDidChangeBinding'));
+			$(window).on('popstate', this.get('_popstateDidChangeBinding'));
 
-			Ember.getOwner(this).lookup('router:main').on('willTransition', this.get('_transitionWillChangeBinding'));
+			getOwner(this).lookup('router:main').on('willTransition', this.get('_transitionWillChangeBinding'));
 		}
 	},
 
@@ -127,9 +133,9 @@ export default Ember.Service.extend(Ember.Evented, {
 		this._super(...args);
 
 		if (this.get('isEnabled')) {
-			Ember.$(window).off('popstate', this.get('_popstateDidChangeBinding'));
+			$(window).off('popstate', this.get('_popstateDidChangeBinding'));
 
-			Ember.getOwner(this).lookup('router:main').off('willTransition', this.get('_transitionWillChangeBinding'));
+			getOwner(this).lookup('router:main').off('willTransition', this.get('_transitionWillChangeBinding'));
 		}
 	},
 
@@ -142,7 +148,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @param  {String} uri
 	 */
 	push(state = {}, title, uri = '') {
-		Ember.assert('state argument must be an object', typeof state === 'object');
+		assert('state argument must be an object', typeof state === 'object');
 
 		const current = this.get('current');
 
@@ -166,7 +172,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @param  {String} uri
 	 */
 	replace(state, title, uri) {
-		Ember.assert('state argument must be an object', typeof state === 'object');
+		assert('state argument must be an object', typeof state === 'object');
 
 		const current = this.get('current');
 
@@ -191,7 +197,7 @@ export default Ember.Service.extend(Ember.Evented, {
 
 		content.push(state);
 
-		this.set('content', Ember.A(content));
+		this.set('content', A(content));
 	},
 
 	/**
@@ -200,7 +206,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @property _popstateDidChangeBinding
 	 * @type Function
 	 */
-	_popstateDidChangeBinding: Ember.computed(function() {
+	_popstateDidChangeBinding: computed(function() {
 		return this._popstateDidChange.bind(this);
 	}),
 
@@ -232,7 +238,7 @@ export default Ember.Service.extend(Ember.Evented, {
 			return;
 		}
 
-		if (Ember.isNone(state) || Ember.isNone(state.index)) {
+		if (isNone(state) || isNone(state.index)) {
 			this.incrementProperty('pointer');
 			state = this._updateState();
 			this._addContent(state);
@@ -275,7 +281,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	_updatePointer() {
 		let state = window.history.state;
 
-		if (Ember.isNone(state) || Ember.isNone(state.index)) {
+		if (isNone(state) || isNone(state.index)) {
 			this.set('pointer', window.history.length - 1);
 			state = this._updateState();
 			this._addContent(state);
@@ -293,7 +299,7 @@ export default Ember.Service.extend(Ember.Evented, {
 	 * @property _transitionWillChangeBinding
 	 * @return Function
 	 */
-	_transitionWillChangeBinding: Ember.computed(function() {
+	_transitionWillChangeBinding: computed(function() {
 		return this._transitionWillChange.bind(this);
 	}),
 

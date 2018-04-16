@@ -1,8 +1,9 @@
+import Application from '../app';
+import { setApplication } from '@ember/test-helpers';
 import './helpers/back';
 import './helpers/replace';
-import resolver from './helpers/resolver';
-import {
-  setResolver
-} from 'ember-qunit';
+import { start } from 'ember-qunit';
 
-setResolver(resolver);
+setApplication(Application.create({ autoboot: false }));
+
+start();

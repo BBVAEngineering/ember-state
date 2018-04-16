@@ -2,7 +2,8 @@
 'use strict';
 
 module.exports = {
+	extends: 'eslint-config-bbva',
 	env: {
-		embertest: true
+	  browser: true
 	}
-};
+}
