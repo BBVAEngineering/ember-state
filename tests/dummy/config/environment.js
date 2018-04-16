@@ -1,9 +1,10 @@
 /* eslint-env node */
+'use strict';
 
-module.exports = function (environment) {
+module.exports = function(environment) {
 	const ENV = {
 		modulePrefix: 'dummy',
-		environment: environment,
+		environment,
 		rootURL: '/',
 		locationType: 'auto',
 		EmberENV: {
@@ -43,7 +44,7 @@ module.exports = function (environment) {
 	}
 
 	if (environment === 'production') {
-
+		// here you can enable a production-specific feature
 	}
 
 	return ENV;
