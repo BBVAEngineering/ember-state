@@ -1,7 +1,7 @@
 /* eslint-disable max-statements */
 import Service from '@ember/service';
 import Evented from '@ember/object/evented';
-import { computed } from '@ember/object';
+import { get, computed } from '@ember/object';
 import { A } from '@ember/array';
 import { getOwner } from '@ember/application';
 import $ from 'jquery';
@@ -311,7 +311,14 @@ export default Service.extend(Evented, {
 	 */
 	_transitionWillChange(transition) {
 		transition.catch(() => {
-			this.set('lastTransition', null);
+			const router = getOwner(this).lookup('router:main');
+			const activeTransition = get(router, 'currentState.routerJs.activeTransition');
+
+			if (activeTransition && activeTransition.isActive) {
+				this.set('lastTransition', activeTransition);
+			} else {
+				this.set('lastTransition', null);
+			}
 		});
 
 		this.set('lastTransition', transition);
