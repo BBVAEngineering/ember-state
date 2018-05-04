@@ -48,7 +48,7 @@ test('it checks replace in beforeModel', (assert) => {
 
 	andThen(() => {
 		assert.ok(service.get('lastTransition'));
-		assert.equal(service.get('current.index'), window.history.length);
+		assert.equal(service.get('current.index'), window.history.length - 1);
 	});
 });
 
@@ -59,6 +59,6 @@ test('it checks back after loaded route', (assert) => {
 
 	andThen(() => {
 		assert.ok(service.get('lastTransition'));
-		assert.equal(service.get('current.index'), window.history.length - 1);
+		assert.equal(service.get('current.index'), window.history.length - 2);
 	});
 });
