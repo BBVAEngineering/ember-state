@@ -10,11 +10,11 @@ module('Integration | Service | state', {
 	beforeEach() {
 		this.application = startApp();
 
+		service = this.application.__container__.lookup('service:state');
+
 		const router = this.application.__container__.lookup('router:main');
 
 		router.location = 'hash';
-
-		service = this.application.__container__.lookup('service:state');
 	},
 	afterEach() {
 		destroyApp(this.application);
