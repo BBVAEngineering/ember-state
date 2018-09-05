@@ -8,6 +8,8 @@ import $ from 'jquery';
 import { assert } from '@ember/debug';
 import { isNone } from '@ember/utils';
 
+const { location } = window;
+
 /**
  * State service that manage browser history navigation.
  *
@@ -147,10 +149,12 @@ export default Service.extend(Evented, {
 	 * @param  {String} title
 	 * @param  {String} uri
 	 */
-	push(state = {}, title, uri = '') {
+	push(state = {}, title, uri) {
 		assert('state argument must be an object', typeof state === 'object');
 
 		const current = this.get('current');
+
+		uri = uri || location.hash;
 
 		this.set('last', current);
 
@@ -175,6 +179,8 @@ export default Service.extend(Evented, {
 		assert('state argument must be an object', typeof state === 'object');
 
 		const current = this.get('current');
+
+		uri = uri || location.hash;
 
 		state.index = current.index;
 
@@ -267,7 +273,7 @@ export default Service.extend(Evented, {
 			index: this.get('pointer')
 		};
 
-		window.history.replaceState(state, null, '');
+		window.history.replaceState(state, null, location.hash);
 
 		return state;
 	},
