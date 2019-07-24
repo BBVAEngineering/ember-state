@@ -318,7 +318,12 @@ export default Service.extend(Evented, {
 	_transitionWillChange(transition) {
 		transition.catch(() => {
 			const router = getOwner(this).lookup('router:main');
-			const activeTransition = get(router, 'currentState.routerJs.activeTransition');
+			let activeTransition = get(router, 'currentState.routerJs.activeTransition');
+
+			// Compat with Ember >=3.8
+			if (!activeTransition) {
+				activeTransition = get(router, 'currentState.router.activeTransition');
+			}
 
 			if (activeTransition && activeTransition.isActive) {
 				this.set('lastTransition', activeTransition);
