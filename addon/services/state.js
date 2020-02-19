@@ -4,7 +4,6 @@ import Evented from '@ember/object/evented';
 import { get, computed } from '@ember/object';
 import { A } from '@ember/array';
 import { getOwner } from '@ember/application';
-import $ from 'jquery';
 import { assert } from '@ember/debug';
 import { isNone } from '@ember/utils';
 
@@ -120,7 +119,7 @@ export default Service.extend(Evented, {
 		if (this.get('isEnabled')) {
 			this._updatePointer();
 
-			$(window).on('popstate', this.get('_popstateDidChangeBinding'));
+			window.addEventListener('popstate', this.get('_popstateDidChangeBinding'));
 
 			getOwner(this).lookup('router:main').on('willTransition', this.get('_transitionWillChangeBinding'));
 		}
@@ -135,7 +134,7 @@ export default Service.extend(Evented, {
 		this._super(...args);
 
 		if (this.get('isEnabled')) {
-			$(window).off('popstate', this.get('_popstateDidChangeBinding'));
+			window.removeEventListener('popstate', this.get('_popstateDidChangeBinding'));
 
 			getOwner(this).lookup('router:main').off('willTransition', this.get('_transitionWillChangeBinding'));
 		}
