@@ -1,6 +1,21 @@
 ---
 language: node_js
+<<<<<<< HEAD
 sudo: false
+||||||| parent of 0896460... v2.17.0...v3.17.0
+node_js:
+  # we recommend testing addons with the same minimum supported node version as Ember CLI
+  # so that your addon works for all apps
+  - "4"
+
+sudo: false
+=======
+node_js:
+  # we recommend testing addons with the same minimum supported node version as Ember CLI
+  # so that your addon works for all apps
+  - "10"
+
+>>>>>>> 0896460... v2.17.0...v3.17.0
 dist: trusty
 node_js: 'stable'
 
@@ -13,6 +28,7 @@ cache:
     - node_modules
 
 env:
+<<<<<<< HEAD
   # we recommend new addons test the current and previous LTS
   # as well as latest stable release (bonus points to beta/canary)
   - EMBER_TRY_SCENARIO=ember-lts-2.16
@@ -22,9 +38,62 @@ env:
   - EMBER_TRY_SCENARIO=ember-default
 
 matrix:
+||||||| parent of 0896460... v2.17.0...v3.17.0
+  global:
+    # See https://git.io/vdao3 for details.
+    - JOBS=1
+  matrix:
+    # we recommend new addons test the current and previous LTS
+    # as well as latest stable release (bonus points to beta/canary)
+    - EMBER_TRY_SCENARIO=ember-lts-2.12
+    - EMBER_TRY_SCENARIO=ember-lts-2.16
+    - EMBER_TRY_SCENARIO=ember-release
+    - EMBER_TRY_SCENARIO=ember-beta
+    - EMBER_TRY_SCENARIO=ember-canary
+    - EMBER_TRY_SCENARIO=ember-default
+
+matrix:
+=======
+  global:
+    # See https://git.io/vdao3 for details.
+    - JOBS=1
+
+branches:
+  only:
+    - master
+    # npm version tags
+    - /^v\d+\.\d+\.\d+/
+
+jobs:
+>>>>>>> 0896460... v2.17.0...v3.17.0
   fast_finish: true
   allow_failures:
     - env: EMBER_TRY_SCENARIO=ember-canary
+
+  include:
+    # runs linting and tests with current locked deps
+    - stage: "Tests"
+      name: "Tests"
+      script:
+        - yarn lint
+        - yarn test:ember
+
+    - stage: "Additional Tests"
+      name: "Floating Dependencies"
+      install:
+        - yarn install --no-lockfile --non-interactive
+      script:
+        - yarn test:ember
+
+    # we recommend new addons test the current and previous LTS
+    # as well as latest stable release (bonus points to beta/canary)
+    - env: EMBER_TRY_SCENARIO=ember-lts-3.12
+    - env: EMBER_TRY_SCENARIO=ember-lts-3.16
+    - env: EMBER_TRY_SCENARIO=ember-release
+    - env: EMBER_TRY_SCENARIO=ember-beta
+    - env: EMBER_TRY_SCENARIO=ember-canary
+    - env: EMBER_TRY_SCENARIO=ember-default-with-jquery
+    - env: EMBER_TRY_SCENARIO=ember-classic
 
 before_install:
   - npm config set spin false
@@ -32,14 +101,28 @@ before_install:
   - npm --version
 
 install:
+<<<<<<< HEAD
   - npm ci
 
 before_script:
   - sudo chown root /opt/google/chrome/chrome-sandbox
   - sudo chmod 4755 /opt/google/chrome/chrome-sandbox
+||||||| parent of 0896460... v2.17.0...v3.17.0
+  - yarn install --no-lockfile --non-interactive
+=======
+  - yarn install --non-interactive
+>>>>>>> 0896460... v2.17.0...v3.17.0
 
 script:
+<<<<<<< HEAD
   # Usually, it's ok to finish the test scenario without reverting
   #  to the addon's original dependency state, skipping "cleanup".
   - node_modules/.bin/eslint '**/*.js'
   - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO --skip-cleanup
+||||||| parent of 0896460... v2.17.0...v3.17.0
+  # Usually, it's ok to finish the test scenario without reverting
+  #  to the addon's original dependency state, skipping "cleanup".
+  - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO --skip-cleanup
+=======
+  - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO
+>>>>>>> 0896460... v2.17.0...v3.17.0

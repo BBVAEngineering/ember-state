@@ -1,4 +1,5 @@
-# ember-state
+ember-state
+==============================================================================
 
 [![Build Status](https://travis-ci.org/BBVAEngineering/ember-state.svg?branch=master)](https://travis-ci.org/BBVAEngineering/ember-state)
 [![GitHub version](https://badge.fury.io/gh/BBVAEngineering%2Fember-state.svg)](https://badge.fury.io/gh/BBVAEngineering%2Fember-state)
