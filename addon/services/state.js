@@ -242,6 +242,7 @@ export default Service.extend(Evented, {
 		// If last transition is a replace, then do nothing.
 		if (lastTransition && lastTransition.urlMethod === 'replace') {
 			this._updateState();
+
 			return;
 		}
 
@@ -250,6 +251,7 @@ export default Service.extend(Evented, {
 			state = this._updateState();
 			this._addContent(state);
 			this.trigger('forward', state, current);
+
 			return;
 		}
 
@@ -292,6 +294,7 @@ export default Service.extend(Evented, {
 			this.set('pointer', window.history.length - 1);
 			state = this._updateState();
 			this._addContent(state);
+
 			return;
 		}
 
