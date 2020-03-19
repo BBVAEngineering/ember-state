@@ -1,4 +1,6 @@
 /* eslint-disable max-statements */
+import { sort } from '@ember/object/computed';
+
 import Service from '@ember/service';
 import Evented from '@ember/object/evented';
 import { get, computed } from '@ember/object';
@@ -40,7 +42,7 @@ export default Service.extend(Evented, {
 	 * @property states
 	 * @type Array
 	 */
-	states: computed.sort('content', 'contentSorting'),
+	states: sort('content', 'contentSorting'),
 
 	/**
 	 * Pointer to the current state.

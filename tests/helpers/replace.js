@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { registerAsyncHelper } from '@ember/test';
 
-export default Ember.Test.registerAsyncHelper('replace', (app, url) => {
+export default registerAsyncHelper('replace', (app, url) => {
 	const router = app.__container__.lookup('router:main');
 	let shouldHandleURL = false;
 
@@ -8,13 +9,13 @@ export default Ember.Test.registerAsyncHelper('replace', (app, url) => {
 		router.replaceWith(url);
 
 		if (shouldHandleURL) {
-			Ember.run(app.__deprecatedInstance__, 'handleURL', url);
+			run(app.__deprecatedInstance__, 'handleURL', url);
 		}
 	});
 
 	if (app._readinessDeferrals > 0) {
 		router.initialURL = url;
-		Ember.run(app, 'advanceReadiness');
+		run(app, 'advanceReadiness');
 		delete router.initialURL;
 	} else {
 		shouldHandleURL = true;

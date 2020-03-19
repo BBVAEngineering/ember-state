@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { registerAsyncHelper } from '@ember/test';
 
-export default Ember.Test.registerAsyncHelper('back', (app) =>
+export default registerAsyncHelper('back', (app) =>
 	app.testHelpers.andThen(() => {
-		Ember.run(window.history, 'back');
+		run(window.history, 'back');
 
 		return app.testHelpers.wait();
 	})

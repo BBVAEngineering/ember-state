@@ -6,324 +6,325 @@ import destroyApp from 'dummy/tests/helpers/destroy-app';
 
 let service;
 
-module('Integration | Service | state', {
-	beforeEach() {
-		this.application = startApp();
+module('Integration | Service | state', function(hooks) {
+  hooks.beforeEach(function() {
+      this.application = startApp();
 
-		service = this.application.__container__.lookup('service:state');
+      service = this.application.__container__.lookup('service:state');
 
-		const router = this.application.__container__.lookup('router:main');
+      const router = this.application.__container__.lookup('router:main');
 
-		router.location = 'hash';
-	},
-	afterEach() {
-		return andThen(() => {
-			destroyApp(this.application);
-			history.pushState('', document.title, window.location.pathname + window.location.search);
-		})
-	}
-});
+      router.location = 'hash';
+  });
 
-test('it exists in the app and is enabled', (assert) => {
-	assert.ok(service);
-	assert.ok(service.get('isEnabled'));
-});
+  hooks.afterEach(function() {
+      return andThen(() => {
+          destroyApp(this.application);
+          history.pushState('', document.title, window.location.pathname + window.location.search);
+      })
+  });
 
-test('it returns current state', (assert) => {
-	const pointer = service.get('current.index');
+  test('it exists in the app and is enabled', (assert) => {
+      assert.ok(service);
+      assert.ok(service.get('isEnabled'));
+  });
 
-	visit('/foo');
+  test('it returns current state', (assert) => {
+      const pointer = service.get('current.index');
 
-	andThen(() => {
-		assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
-	});
-});
+      visit('/foo');
 
-test('it returns last state', (assert) => {
-	const pointer = service.get('current.index');
+      andThen(() => {
+          assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns last state', (assert) => {
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	andThen(() => {
-		assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
-	});
-});
+      visit('/bar');
 
-test('it returns current and last state on forward', (assert) => {
-	const pointer = service.get('current.index');
+      andThen(() => {
+          assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns current and last state on forward', (assert) => {
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	andThen(() => {
-		assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
-		assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
-	});
-});
+      visit('/bar');
 
-test('it returns current and last state on back', (assert) => {
-	const pointer = service.get('current.index');
+      andThen(() => {
+          assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
+          assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns current and last state on back', (assert) => {
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	back();
+      visit('/bar');
 
-	andThen(() => {
-		assert.equal(service.get('next.index'), pointer + 2, 'next index points to history after current index');
-		assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
-		assert.equal(service.get('previous.index'), pointer, 'previous index points to history before current index');
-	});
-});
+      back();
 
-test('it triggers back event', (assert) => {
-	assert.expect(4);
+      andThen(() => {
+          assert.equal(service.get('next.index'), pointer + 2, 'next index points to history after current index');
+          assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
+          assert.equal(service.get('previous.index'), pointer, 'previous index points to history before current index');
+      });
+  });
 
-	const pointer = service.get('current.index');
+  test('it triggers back event', (assert) => {
+      assert.expect(4);
 
-	visit('/foo');
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	andThen(() => {
-		service.on('back', function(current, last) {
-			assert.deepEqual(this.get('current'), current, 'current objects are equals');
-			assert.equal(last.index, pointer + 2, 'last index points to last state index');
-			assert.equal(current.index, pointer + 1, 'current index points to history index');
-			assert.equal(service.get('previous.index'), pointer, 'previous index points to history before current index');
-		});
-	});
+      visit('/bar');
 
-	back();
-});
+      andThen(() => {
+          service.on('back', function(current, last) {
+              assert.deepEqual(this.get('current'), current, 'current objects are equals');
+              assert.equal(last.index, pointer + 2, 'last index points to last state index');
+              assert.equal(current.index, pointer + 1, 'current index points to history index');
+              assert.equal(service.get('previous.index'), pointer, 'previous index points to history before current index');
+          });
+      });
 
-test('it triggers forward event', (assert) => {
-	assert.expect(4);
+      back();
+  });
 
-	const pointer = service.get('current.index');
+  test('it triggers forward event', (assert) => {
+      assert.expect(4);
 
-	visit('/foo');
+      const pointer = service.get('current.index');
 
-	andThen(() => {
-		service.on('forward', function(current, last) {
-			assert.deepEqual(this.get('current'), current, 'current objects are equals');
-			assert.equal(last.index, pointer + 1, 'last index points to last state index');
-			assert.equal(current.index, pointer + 2, 'current index points to history index');
-			assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
-		});
-	});
+      visit('/foo');
 
-	visit('/bar');
-});
+      andThen(() => {
+          service.on('forward', function(current, last) {
+              assert.deepEqual(this.get('current'), current, 'current objects are equals');
+              assert.equal(last.index, pointer + 1, 'last index points to last state index');
+              assert.equal(current.index, pointer + 2, 'current index points to history index');
+              assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
+          });
+      });
 
-test('it triggers both events', (assert) => {
-	assert.expect(8);
+      visit('/bar');
+  });
 
-	const pointer = service.get('current.index');
+  test('it triggers both events', (assert) => {
+      assert.expect(8);
 
-	visit('/foo');
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	andThen(() => {
-		service.on('back', function(current, last) {
-			assert.deepEqual(this.get('current'), current, 'current objects are equals');
-			assert.equal(last.index, pointer + 2, 'last index points to last state index');
-			assert.equal(current.index, pointer + 1, 'current index points to history index');
-			assert.equal(service.get('previous.index'), pointer, 'previous index points to history before current index');
-		});
-	});
+      visit('/bar');
 
-	back();
+      andThen(() => {
+          service.on('back', function(current, last) {
+              assert.deepEqual(this.get('current'), current, 'current objects are equals');
+              assert.equal(last.index, pointer + 2, 'last index points to last state index');
+              assert.equal(current.index, pointer + 1, 'current index points to history index');
+              assert.equal(service.get('previous.index'), pointer, 'previous index points to history before current index');
+          });
+      });
 
-	andThen(() => {
-		service.on('forward', function(current, last) {
-			assert.deepEqual(this.get('current'), current, 'current objects are equals');
-			assert.equal(last.index, pointer + 1, 'last index points to last state index');
-			assert.equal(current.index, pointer + 2, 'current index points to history index');
-			assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
-		});
+      back();
 
-		window.history.forward();
-	});
-});
+      andThen(() => {
+          service.on('forward', function(current, last) {
+              assert.deepEqual(this.get('current'), current, 'current objects are equals');
+              assert.equal(last.index, pointer + 1, 'last index points to last state index');
+              assert.equal(current.index, pointer + 2, 'current index points to history index');
+              assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
+          });
 
-test('it push state to history', (assert) => {
-	const pointer = service.get('current.index');
+          window.history.forward();
+      });
+  });
 
-	visit('/foo');
+  test('it push state to history', (assert) => {
+      const pointer = service.get('current.index');
 
-	andThen(() => {
-		service.push({ foo: 'bar' }, 'title');
+      visit('/foo');
 
-		assert.equal(service.get('current.foo'), 'bar', 'state is pushed');
-		assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
-		assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
-	});
-});
+      andThen(() => {
+          service.push({ foo: 'bar' }, 'title');
 
-test('it replaces state to history', (assert) => {
-	const pointer = service.get('current.index');
+          assert.equal(service.get('current.foo'), 'bar', 'state is pushed');
+          assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
+          assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
+      });
+  });
 
-	visit('/foo');
+  test('it replaces state to history', (assert) => {
+      const pointer = service.get('current.index');
 
-	andThen(() => {
-		service.replace({ foo: 'bar' }, 'title');
+      visit('/foo');
 
-		assert.equal(service.get('current.foo'), 'bar', 'state is replaced');
-		assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
-	});
-});
+      andThen(() => {
+          service.replace({ foo: 'bar' }, 'title');
 
-test('it returns last state on push', (assert) => {
-	const pointer = service.get('current.index');
+          assert.equal(service.get('current.foo'), 'bar', 'state is replaced');
+          assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns last state on push', (assert) => {
+      const pointer = service.get('current.index');
 
-	andThen(() => {
-		service.push({ foo: 'bar' });
+      visit('/foo');
 
-		assert.equal(service.get('current.foo'), 'bar', 'state is pushed');
-		assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
-		assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
-	});
-});
+      andThen(() => {
+          service.push({ foo: 'bar' });
 
-test('it returns last state on back and push', (assert) => {
-	const pointer = service.get('current.index');
+          assert.equal(service.get('current.foo'), 'bar', 'state is pushed');
+          assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
+          assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns last state on back and push', (assert) => {
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	back();
+      visit('/bar');
 
-	andThen(() => {
-		service.push({ foo: 'bar' });
+      back();
 
-		assert.equal(service.get('current.foo'), 'bar', 'state is pushed');
-		assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
-		assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
-	});
-});
+      andThen(() => {
+          service.push({ foo: 'bar' });
 
-test('it returns last state on back and go', (assert) => {
-	const pointer = service.get('current.index');
+          assert.equal(service.get('current.foo'), 'bar', 'state is pushed');
+          assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
+          assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns last state on back and go', (assert) => {
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	andThen(() => {
-		service.replace({ foo: 'bar' });
-	});
+      visit('/bar');
 
-	back();
+      andThen(() => {
+          service.replace({ foo: 'bar' });
+      });
 
-	visit('/wow');
+      back();
 
-	andThen(() => {
-		assert.notOk(service.get('current.foo'), 'state is not pushed');
-		assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
-		assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
-	});
-});
+      visit('/wow');
 
-test('it returns ordered navigation states', (assert) => {
-	const pointer = service.get('current.index');
+      andThen(() => {
+          assert.notOk(service.get('current.foo'), 'state is not pushed');
+          assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
+          assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns ordered navigation states', (assert) => {
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      visit('/foo');
 
-	back();
+      visit('/bar');
 
-	visit('/bar');
+      back();
 
-	andThen(() => {
-		service.push({ foo: 'bar' });
-	});
+      visit('/bar');
 
-	andThen(() => {
-		const states = service.get('states');
+      andThen(() => {
+          service.push({ foo: 'bar' });
+      });
 
-		assert.equal(states.length, 4, 'navigation states has all states');
-		assert.equal(states[0], states.findBy('index', pointer), 'first state exists in first position');
-		assert.equal(states[1], states.findBy('index', pointer + 1), 'first state exists in first position');
-		assert.equal(states[2], states.findBy('index', pointer + 2), 'first state exists in first position');
-		assert.equal(states[3], states.findBy('index', pointer + 3), 'first state exists in first position');
-	});
-});
+      andThen(() => {
+          const states = service.get('states');
 
-test('it pushes state without params', (assert) => {
-	const pointer = service.get('current.index');
+          assert.equal(states.length, 4, 'navigation states has all states');
+          assert.equal(states[0], states.findBy('index', pointer), 'first state exists in first position');
+          assert.equal(states[1], states.findBy('index', pointer + 1), 'first state exists in first position');
+          assert.equal(states[2], states.findBy('index', pointer + 2), 'first state exists in first position');
+          assert.equal(states[3], states.findBy('index', pointer + 3), 'first state exists in first position');
+      });
+  });
 
-	visit('/foo');
+  test('it pushes state without params', (assert) => {
+      const pointer = service.get('current.index');
 
-	andThen(() => {
-		service.push();
-	});
+      visit('/foo');
 
-	andThen(() => {
-		assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
-		assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
-	});
-});
+      andThen(() => {
+          service.push();
+      });
 
-test('it returns current and last state on replace', (assert) => {
-	const pointer = service.get('current.index');
+      andThen(() => {
+          assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
+          assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
+      });
+  });
 
-	visit('/foo');
+  test('it returns current and last state on replace', (assert) => {
+      const pointer = service.get('current.index');
 
-	replace('/bar');
+      visit('/foo');
 
-	andThen(() => {
-		assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
-		assert.equal(service.get('previous.index'), pointer + 0, 'previous index points to history before current index');
-		assert.equal(service.get('last.index'), pointer + 0, 'last index points to last state index');
-	});
-});
+      replace('/bar');
 
-test('it has no previous pointer when replacing first route', (assert) => {
-	const pointer = service.get('current.index');
+      andThen(() => {
+          assert.equal(service.get('current.index'), pointer + 1, 'current index points to history index');
+          assert.equal(service.get('previous.index'), pointer + 0, 'previous index points to history before current index');
+          assert.equal(service.get('last.index'), pointer + 0, 'last index points to last state index');
+      });
+  });
 
-	replace('/foo');
+  test('it has no previous pointer when replacing first route', (assert) => {
+      const pointer = service.get('current.index');
 
-	andThen(() => {
-		assert.equal(service.get('current.index'), pointer + 0, 'current index points to history index');
-		assert.notOk(service.get('previous'), 'previous index points to nowhere');
-		assert.equal(service.get('last.index'), pointer + 0, 'last index points to last state index');
-	});
-});
+      replace('/foo');
 
-test('it preserves history state when replaced', (assert) => {
-	const pointer = service.get('current.index');
+      andThen(() => {
+          assert.equal(service.get('current.index'), pointer + 0, 'current index points to history index');
+          assert.notOk(service.get('previous'), 'previous index points to nowhere');
+          assert.equal(service.get('last.index'), pointer + 0, 'last index points to last state index');
+      });
+  });
 
-	replace('/foo');
+  test('it preserves history state when replaced', (assert) => {
+      const pointer = service.get('current.index');
 
-	visit('/bar');
+      replace('/foo');
 
-	back();
+      visit('/bar');
 
-	andThen(() => {
-		assert.equal(service.get('current.index'), pointer, 'current index points to history index');
-		assert.notOk(service.get('previous'), 'previous index points to nowhere');
-		assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
-	});
-});
+      back();
 
-test('it throws an error when push tries to set a non object', (assert) => {
-	assert.throws(() => {
-		service.push('foo');
-	});
-});
+      andThen(() => {
+          assert.equal(service.get('current.index'), pointer, 'current index points to history index');
+          assert.notOk(service.get('previous'), 'previous index points to nowhere');
+          assert.equal(service.get('last.index'), pointer + 1, 'last index points to last state index');
+      });
+  });
 
-test('it throws an error when replace tries to set a non object', (assert) => {
-	assert.throws(() => {
-		service.replace('foo');
-	});
+  test('it throws an error when push tries to set a non object', (assert) => {
+      assert.throws(() => {
+          service.push('foo');
+      });
+  });
+
+  test('it throws an error when replace tries to set a non object', (assert) => {
+      assert.throws(() => {
+          service.replace('foo');
+      });
+  });
 });
