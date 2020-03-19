@@ -15,46 +15,16 @@
 /.git/
 /.gitignore
 /.template-lintrc.js
+/.commitlintrc.js
+/.huskyrc.js
+/.nycrc.json
+/.releaserc
+/greenkeeper.json
+/jsconfig.json
 /.travis.yml
 /.watchmanconfig
 /bower.json
 /config/ember-try.js
-<<<<<<< HEAD
-/dist
-/tests
-/tmp
-**/.gitkeep
-.bowerrc
-.editorconfig
-.ember-cli
-.gitignore
-.eslintrc.js
-.watchmanconfig
-.travis.yml
-bower.json
-ember-cli-build.js
-testem.js
-||||||| parent of 0896460... v2.17.0...v3.17.0
-/dist
-/tests
-/tmp
-**/.gitkeep
-.bowerrc
-.editorconfig
-.ember-cli
-.gitignore
-.eslintrc.js
-.watchmanconfig
-.travis.yml
-bower.json
-ember-cli-build.js
-testem.js
-
-# ember-try
-.node_modules.ember-try/
-bower.json.ember-try
-package.json.ember-try
-=======
 /CONTRIBUTING.md
 /ember-cli-build.js
 /testem.js
@@ -66,4 +36,3 @@ package.json.ember-try
 /.node_modules.ember-try/
 /bower.json.ember-try
 /package.json.ember-try
->>>>>>> 0896460... v2.17.0...v3.17.0

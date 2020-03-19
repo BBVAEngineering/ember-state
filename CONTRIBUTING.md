@@ -3,14 +3,14 @@
 ## Installation
 
 * `git clone <repository-url>`
-* `cd ember-state`
-* `yarn install`
+* `cd my-addon`
+* `npm install`
 
 ## Linting
 
-* `yarn lint:hbs`
-* `yarn lint:js`
-* `yarn lint:js --fix`
+* `npm run lint:hbs`
+* `npm run lint:js`
+* `npm run lint:js -- --fix`
 
 ## Running tests
 
