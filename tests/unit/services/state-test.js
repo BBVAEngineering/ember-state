@@ -17,11 +17,10 @@ module('Integration | Service | state', {
 		router.location = 'hash';
 	},
 	afterEach() {
-		destroyApp(this.application);
-
-		window.history.pushState(null, null, '');
-
-		window.location.hash = '';
+		return andThen(() => {
+			destroyApp(this.application);
+			history.pushState('', document.title, window.location.pathname + window.location.search);
+		})
 	}
 });
 
@@ -31,7 +30,7 @@ test('it exists in the app and is enabled', (assert) => {
 });
 
 test('it returns current state', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -41,7 +40,7 @@ test('it returns current state', (assert) => {
 });
 
 test('it returns last state', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -53,7 +52,7 @@ test('it returns last state', (assert) => {
 });
 
 test('it returns current and last state on forward', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -66,7 +65,7 @@ test('it returns current and last state on forward', (assert) => {
 });
 
 test('it returns current and last state on back', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -84,7 +83,7 @@ test('it returns current and last state on back', (assert) => {
 test('it triggers back event', (assert) => {
 	assert.expect(4);
 
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -105,7 +104,7 @@ test('it triggers back event', (assert) => {
 test('it triggers forward event', (assert) => {
 	assert.expect(4);
 
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -124,7 +123,7 @@ test('it triggers forward event', (assert) => {
 test('it triggers both events', (assert) => {
 	assert.expect(8);
 
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -154,7 +153,7 @@ test('it triggers both events', (assert) => {
 });
 
 test('it push state to history', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -168,7 +167,7 @@ test('it push state to history', (assert) => {
 });
 
 test('it replaces state to history', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -181,7 +180,7 @@ test('it replaces state to history', (assert) => {
 });
 
 test('it returns last state on push', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -195,7 +194,7 @@ test('it returns last state on push', (assert) => {
 });
 
 test('it returns last state on back and push', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -213,7 +212,7 @@ test('it returns last state on back and push', (assert) => {
 });
 
 test('it returns last state on back and go', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -235,7 +234,7 @@ test('it returns last state on back and go', (assert) => {
 });
 
 test('it returns ordered navigation states', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -247,7 +246,9 @@ test('it returns ordered navigation states', (assert) => {
 
 	andThen(() => {
 		service.push({ foo: 'bar' });
+	});
 
+	andThen(() => {
 		const states = service.get('states');
 
 		assert.equal(states.length, 4, 'navigation states has all states');
@@ -259,20 +260,22 @@ test('it returns ordered navigation states', (assert) => {
 });
 
 test('it pushes state without params', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
 	andThen(() => {
 		service.push();
+	});
 
+	andThen(() => {
 		assert.equal(service.get('current.index'), pointer + 2, 'current index points to history index');
 		assert.equal(service.get('previous.index'), pointer + 1, 'previous index points to history before current index');
 	});
 });
 
 test('it returns current and last state on replace', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	visit('/foo');
 
@@ -286,7 +289,7 @@ test('it returns current and last state on replace', (assert) => {
 });
 
 test('it has no previous pointer when replacing first route', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	replace('/foo');
 
@@ -298,7 +301,7 @@ test('it has no previous pointer when replacing first route', (assert) => {
 });
 
 test('it preserves history state when replaced', (assert) => {
-	const pointer = window.history.length - 1;
+	const pointer = service.get('current.index');
 
 	replace('/foo');
 

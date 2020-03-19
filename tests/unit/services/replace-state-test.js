@@ -35,30 +35,33 @@ module('Integration | Service | replace-state', {
 		}));
 	},
 	afterEach() {
-		destroyApp(this.application);
-
-		window.history.pushState(null, null, '');
-
-		window.location.hash = '';
+		return andThen(() => {
+			history.pushState('', document.title, window.location.pathname + window.location.search);
+			destroyApp(this.application);
+		});
 	}
 });
 
 test('it checks replace in beforeModel', (assert) => {
+	const pointer = service.get('current.index');
+
 	visit('/foo');
 
 	andThen(() => {
 		assert.ok(service.get('lastTransition'));
-		assert.equal(service.get('current.index'), window.history.length - 1);
+		assert.equal(service.get('current.index'), pointer + 1);
 	});
 });
 
 test('it checks back after loaded route', (assert) => {
+	const pointer = service.get('current.index');
+
 	visit('/foo');
 
 	back();
 
 	andThen(() => {
 		assert.ok(service.get('lastTransition'));
-		assert.equal(service.get('current.index'), window.history.length - 2);
+		assert.equal(service.get('current.index'), pointer);
 	});
 });
