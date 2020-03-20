@@ -1,10 +1,7 @@
-import { run } from '@ember/runloop';
-import { registerAsyncHelper } from '@ember/test';
+import { settled } from '@ember/test-helpers';
 
-export default registerAsyncHelper('back', (app) =>
-	app.testHelpers.andThen(() => {
-		run(window.history, 'back');
+export default async function back() {
+	window.history.back();
 
-		return app.testHelpers.wait();
-	})
-);
+	await settled();
+}

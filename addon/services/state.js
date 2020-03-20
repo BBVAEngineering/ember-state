@@ -1,9 +1,7 @@
-/* eslint-disable max-statements */
 import { sort } from '@ember/object/computed';
-
 import Service from '@ember/service';
 import Evented from '@ember/object/evented';
-import { get, computed } from '@ember/object';
+import { computed } from '@ember/object';
 import { A } from '@ember/array';
 import { getOwner } from '@ember/application';
 import { assert } from '@ember/debug';
@@ -34,6 +32,7 @@ export default Service.extend(Evented, {
 	 * @property contentSorting
 	 * @type Array
 	 */
+	// eslint-disable-next-line ember/avoid-leaking-state-in-ember-objects
 	contentSorting: ['index'],
 
 	/**
@@ -58,11 +57,11 @@ export default Service.extend(Evented, {
 	 * @property isEnabled
 	 * @return Boolean
 	 */
-	isEnabled: computed(() => {
+	get isEnabled() {
 		const userAgent = window.navigator.userAgent;
 
 		return !userAgent.match(/CriOS/);
-	}),
+	},
 
 	/**
 	 * Returns the next state of the history.
@@ -123,7 +122,8 @@ export default Service.extend(Evented, {
 
 			window.addEventListener('popstate', this.get('_popstateDidChangeBinding'));
 
-			getOwner(this).lookup('router:main').on('willTransition', this.get('_transitionWillChangeBinding'));
+			getOwner(this).lookup('service:router').on('routeWillChange', this.get('_routeWillChangeBinding'));
+			getOwner(this).lookup('service:router').on('routeDidChange', this.get('_routeDidChangeBinding'));
 		}
 	},
 
@@ -138,7 +138,8 @@ export default Service.extend(Evented, {
 		if (this.get('isEnabled')) {
 			window.removeEventListener('popstate', this.get('_popstateDidChangeBinding'));
 
-			getOwner(this).lookup('router:main').off('willTransition', this.get('_transitionWillChangeBinding'));
+			getOwner(this).lookup('service:router').off('routeWillChange', this.get('_routeWillChangeBinding'));
+			getOwner(this).lookup('service:router').off('routeDidChange', this.get('_routeDidChangeBinding'));
 		}
 	},
 
@@ -223,12 +224,14 @@ export default Service.extend(Evented, {
 	 * @method  _popstateDidChange
 	 * @private
 	 */
+	// eslint-disable-next-line complexity, max-statements
 	_popstateDidChange(e) {
 		const current = this.get('current');
 		const lastTransition = this.get('lastTransition');
 		let state = window.history.state;
 
 		// Prevent popping manual triggered events.
+		// istanbul ignore if: unable to test
 		if (e.isTrigger) {
 			return;
 		}
@@ -255,6 +258,7 @@ export default Service.extend(Evented, {
 			return;
 		}
 
+		// istanbul ignore else
 		if (current && state.index > current.index) {
 			this.incrementProperty('pointer');
 			this.trigger('forward', state, current);
@@ -306,37 +310,41 @@ export default Service.extend(Evented, {
 	/**
 	 * Returns a binded transition will change method.
 	 *
-	 * @property _transitionWillChangeBinding
+	 * @property _routeWillChangeBinding
 	 * @return Function
 	 */
-	_transitionWillChangeBinding: computed(function() {
-		return this._transitionWillChange.bind(this);
+	_routeWillChangeBinding: computed(function() {
+		return this._routeWillChange.bind(this);
 	}),
 
 	/**
 	 * Save transition on will transition.
 	 *
-	 * @method _transitionWillChange
+	 * @method _routeWillChange
 	 * @param  {Object}             transition
 	 */
-	_transitionWillChange(transition) {
-		transition.catch(() => {
-			const router = getOwner(this).lookup('router:main');
-			let activeTransition = get(router, 'currentState.routerJs.activeTransition');
-
-			// Compat with Ember >=3.8
-			if (!activeTransition) {
-				activeTransition = get(router, 'currentState.router.activeTransition');
-			}
-
-			if (activeTransition && activeTransition.isActive) {
-				this.set('lastTransition', activeTransition);
-			} else {
-				this.set('lastTransition', null);
-			}
-		});
-
+	_routeWillChange(transition) {
 		this.set('lastTransition', transition);
+	},
+
+	/**
+	 * Returns a binded transition did change method.
+	 *
+	 * @property _routeDidChangeBinding
+	 * @return Function
+	 */
+	_routeDidChangeBinding: computed(function() {
+		return this._routeDidChange.bind(this);
+	}),
+
+	/**
+	 * Save transition on did transition.
+	 *
+	 * @method _routeDidChange
+	 * @param  {Object}             transition
+	 */
+	_routeDidChange() {
+		this.set('lastTransition', null);
 	}
 
 });

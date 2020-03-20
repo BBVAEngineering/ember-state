@@ -1,25 +1,12 @@
-import { run } from '@ember/runloop';
-import { registerAsyncHelper } from '@ember/test';
+import { settled } from '@ember/test-helpers';
 
-export default registerAsyncHelper('replace', (app, url) => {
-	const router = app.__container__.lookup('router:main');
-	let shouldHandleURL = false;
+const { location } = window;
 
-	app.boot().then(() => {
-		router.replaceWith(url);
+export default async function replace(hash) {
+	const url = `${location.pathname}${location.search}#${hash}`;
 
-		if (shouldHandleURL) {
-			run(app.__deprecatedInstance__, 'handleURL', url);
-		}
-	});
+	window.history.replaceState(null, document.title, url);
 
-	if (app._readinessDeferrals > 0) {
-		router.initialURL = url;
-		run(app, 'advanceReadiness');
-		delete router.initialURL;
-	} else {
-		shouldHandleURL = true;
-	}
+	await settled();
+}
 
-	return app.testHelpers.wait();
-});
