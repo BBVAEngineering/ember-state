@@ -1,24 +1,12 @@
-import Ember from 'ember';
+import { settled } from '@ember/test-helpers';
 
-export default Ember.Test.registerAsyncHelper('replace', (app, url) => {
-	const router = app.__container__.lookup('router:main');
-	let shouldHandleURL = false;
+const { location } = window;
 
-	app.boot().then(() => {
-		router.replaceWith(url);
+export default async function replace(hash) {
+	const url = `${location.pathname}${location.search}#${hash}`;
 
-		if (shouldHandleURL) {
-			Ember.run(app.__deprecatedInstance__, 'handleURL', url);
-		}
-	});
+	window.history.replaceState(null, document.title, url);
 
-	if (app._readinessDeferrals > 0) {
-		router.initialURL = url;
-		Ember.run(app, 'advanceReadiness');
-		delete router.initialURL;
-	} else {
-		shouldHandleURL = true;
-	}
+	await settled();
+}
 
-	return app.testHelpers.wait();
-});

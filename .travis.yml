@@ -1,8 +1,8 @@
 ---
 language: node_js
-sudo: false
+os: linux
+node_js: lts/erbium
 dist: trusty
-node_js: 'stable'
 
 addons:
   chrome: stable
@@ -10,36 +10,64 @@ addons:
 cache:
   directories:
     - $HOME/.npm
-    - node_modules
 
 env:
-  # we recommend new addons test the current and previous LTS
-  # as well as latest stable release (bonus points to beta/canary)
-  - EMBER_TRY_SCENARIO=ember-lts-2.16
-  - EMBER_TRY_SCENARIO=ember-release
-  - EMBER_TRY_SCENARIO=ember-beta
-  - EMBER_TRY_SCENARIO=ember-canary
-  - EMBER_TRY_SCENARIO=ember-default
+  global:
+    - JOBS=1
 
-matrix:
-  fast_finish: true
+jobs:
   allow_failures:
     - env: EMBER_TRY_SCENARIO=ember-canary
 
+  include:
+    - stage: "Tests"
+      before_install:
+        - npm config set spin false
+        - npm install -g npm@6
+        - npm install -g codecov
+        - npm install -g greenkeeper-lockfile@1
+        - npm install -g @commitlint/travis-cli
+        - npm --version
+      install:
+        - if [[ $TRAVIS_BRANCH =~ greenkeeper || $TRAVIS_PULL_REQUEST_BRANCH =~ greenkeeper ]]; then npm install; else npm ci; fi
+      before_script:
+        - greenkeeper-lockfile-update
+      script:
+        - commitlint-travis
+        - npm run lint:js
+        - npm run lint:hbs
+        - npm test
+        - npx semantic-release --dry-run --branches=$TRAVIS_BRANCH
+      after_script:
+        - greenkeeper-lockfile-upload
+      after_success:
+        - codecov --file=coverage/lcov.info
+
+    - stage: "Regression Tests"
+      env: EMBER_TRY_SCENARIO=ember-lts-3.12
+    - env: EMBER_TRY_SCENARIO=ember-lts-3.16
+    - env: EMBER_TRY_SCENARIO=ember-release
+    - env: EMBER_TRY_SCENARIO=ember-beta
+    - env: EMBER_TRY_SCENARIO=ember-canary
+    - env: EMBER_TRY_SCENARIO=ember-default-with-jquery
+
+    - stage: "Release"
+      script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: npx semantic-release
+
 before_install:
   - npm config set spin false
-  - npm install -g npm@^5.7
+  - npm install -g npm@6
   - npm --version
 
-install:
-  - npm ci
-
-before_script:
-  - sudo chown root /opt/google/chrome/chrome-sandbox
-  - sudo chmod 4755 /opt/google/chrome/chrome-sandbox
-
 script:
-  # Usually, it's ok to finish the test scenario without reverting
-  #  to the addon's original dependency state, skipping "cleanup".
-  - node_modules/.bin/eslint '**/*.js'
-  - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO --skip-cleanup
+  - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO
+
+stages:
+  - "Tests"
+  - "Regression Tests"
+  - name: "Release"
+    if: branch = master

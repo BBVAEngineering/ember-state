@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import { settled } from '@ember/test-helpers';
 
-export default Ember.Test.registerAsyncHelper('back', (app) => {
-	Ember.run(window.history, 'back');
+export default async function back() {
+	window.history.back();
 
-	return app.testHelpers.wait();
-});
+	await settled();
+}
