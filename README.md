@@ -1,16 +1,18 @@
-ember-state
-==============================================================================
+# ember-state
 
 [![Build Status](https://travis-ci.org/BBVAEngineering/ember-state.svg?branch=master)](https://travis-ci.org/BBVAEngineering/ember-state)
 [![GitHub version](https://badge.fury.io/gh/BBVAEngineering%2Fember-state.svg)](https://badge.fury.io/gh/BBVAEngineering%2Fember-state)
-[![npm version](https://badge.fury.io/js/ember-state.svg)](https://badge.fury.io/js/ember-storages)
+[![NPM version](https://badge.fury.io/js/ember-state.svg)](https://badge.fury.io/js/ember-state)
 [![Dependency Status](https://david-dm.org/BBVAEngineering/ember-state.svg)](https://david-dm.org/BBVAEngineering/ember-state)
-
-An [ember-cli addon](http://www.ember-cli.com/) with a State service that manage browser history navigation.
+[![codecov](https://codecov.io/gh/BBVAEngineering/ember-state/branch/master/graph/badge.svg)](https://codecov.io/gh/BBVAEngineering/ember-state)
+[![Greenkeeper badge](https://badges.greenkeeper.io/BBVAEngineering/ember-state.svg)](https://greenkeeper.io/)
+[![Ember Observer Score](https://emberobserver.com/badges/ember-state.svg)](https://emberobserver.com/addons/ember-state)
 
 ## Information
 
 [![NPM](https://nodei.co/npm/ember-state.png?downloads=true&downloadRank=true)](https://nodei.co/npm/ember-state/)
+
+An [ember-cli addon](http://www.ember-cli.com/) with a State service that manage browser history navigation.
 
 ## Install in ember-cli application
 
