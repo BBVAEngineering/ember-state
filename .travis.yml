@@ -37,6 +37,7 @@ jobs:
         - npm run lint:js
         - npm run lint:hbs
         - npm test
+        - npx semantic-release --dry-run --branches=$TRAVIS_BRANCH
       after_script:
         - greenkeeper-lockfile-upload
       after_success:
