@@ -6,6 +6,7 @@ import { A } from '@ember/array';
 import { getOwner } from '@ember/application';
 import { assert } from '@ember/debug';
 import { isNone } from '@ember/utils';
+import { schedule } from '@ember/runloop';
 
 const { location } = window;
 
@@ -224,48 +225,53 @@ export default Service.extend(Evented, {
 	 * @method  _popstateDidChange
 	 * @private
 	 */
-	// eslint-disable-next-line complexity, max-statements
 	_popstateDidChange(e) {
-		const current = this.get('current');
-		const lastTransition = this.get('lastTransition');
-		let state = window.history.state;
-
 		// Prevent popping manual triggered events.
 		// istanbul ignore if: unable to test
 		if (e.isTrigger) {
 			return;
 		}
 
-		// Always save current state as last.
-		this.set('last', current);
+		schedule('routerTransitions', () => {
+			if (this.triggerChange) {
+				this.triggerChange();
+			}
+		});
 
-		// Always clean last transition.
-		this.set('lastTransition', null);
+		// eslint-disable-next-line complexity, max-statements
+		this.triggerChange = (transition) => {
+			const current = this.get('current');
+			let state = window.history.state;
 
-		// If last transition is a replace, then do nothing.
-		if (lastTransition && lastTransition.urlMethod === 'replace') {
-			this._updateState();
+			// Always save current state as last.
+			this.set('last', current);
+			this.triggerChange = null;
 
-			return;
-		}
+			// If last transition is a replace, then do nothing.
+			if (transition && transition.urlMethod === 'replace') {
+				this._updateState();
 
-		if (isNone(state) || isNone(state.index)) {
-			this.incrementProperty('pointer');
-			state = this._updateState();
-			this._addContent(state);
-			this.trigger('forward', state, current);
+				return;
+			}
 
-			return;
-		}
+			if (isNone(state) || isNone(state.index)) {
+				this.incrementProperty('pointer');
+				state = this._updateState();
+				this._addContent(state);
+				this.trigger('forward', state, current);
 
-		// istanbul ignore else
-		if (current && state.index > current.index) {
-			this.incrementProperty('pointer');
-			this.trigger('forward', state, current);
-		} else if (current && state.index < current.index) {
-			this.decrementProperty('pointer');
-			this.trigger('back', state, current);
-		}
+				return;
+			}
+
+			// istanbul ignore else
+			if (current && state.index > current.index) {
+				this.incrementProperty('pointer');
+				this.trigger('forward', state, current);
+			} else if (current && state.index < current.index) {
+				this.decrementProperty('pointer');
+				this.trigger('back', state, current);
+			}
+		};
 	},
 
 	/**
@@ -324,7 +330,9 @@ export default Service.extend(Evented, {
 	 * @param  {Object}             transition
 	 */
 	_routeWillChange(transition) {
-		this.set('lastTransition', transition);
+		if (this.triggerChange) {
+			this.triggerChange(transition);
+		}
 	},
 
 	/**
@@ -343,8 +351,10 @@ export default Service.extend(Evented, {
 	 * @method _routeDidChange
 	 * @param  {Object}             transition
 	 */
-	_routeDidChange() {
-		this.set('lastTransition', null);
+	_routeDidChange(transition) {
+		if (this.triggerChange) {
+			this.triggerChange(transition);
+		}
 	}
 
 });

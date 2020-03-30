@@ -1,6 +1,6 @@
 import { module, test, skip } from 'qunit';
 import { setupApplicationTest } from 'ember-qunit';
-import { visit } from '@ember/test-helpers';
+import { settled, visit } from '@ember/test-helpers';
 import back from '../../helpers/back';
 import replace from '../../helpers/replace';
 
@@ -158,6 +158,21 @@ module('Integration | Service | state', (hooks) => {
 		assert.equal(this.service.get('current.foo'), 'bar', 'state is pushed');
 		assert.equal(this.service.get('current.index'), pointer + 2, 'current index points to history index');
 		assert.equal(this.service.get('last.index'), pointer + 1, 'last index points to last state index');
+	});
+
+	test('it returns last state on push and back', async function(assert) {
+		const pointer = this.service.get('current.index');
+
+		await visit('/foo');
+
+		this.service.push({ foo: 'bar' });
+
+		await settled();
+
+		await back();
+
+		assert.equal(this.service.get('current.index'), pointer + 1, 'current index points to history index');
+		assert.equal(this.service.get('last.index'), pointer + 2, 'last index points to last state index');
 	});
 
 	test('it returns last state on back and push', async function(assert) {
