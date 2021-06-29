@@ -1,6 +1,6 @@
 export default {
-	name: 'state',
-	initialize(appInstance) {
-		appInstance.lookup('service:state');
-	}
+  name: 'state',
+  initialize(appInstance) {
+    appInstance.lookup('service:state');
+  },
 };
