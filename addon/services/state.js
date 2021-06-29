@@ -1,12 +1,12 @@
-import { sort } from '@ember/object/computed';
 import Service from '@ember/service';
 import Evented from '@ember/object/evented';
-import { computed } from '@ember/object';
+import { action } from '@ember/object';
 import { A } from '@ember/array';
 import { getOwner } from '@ember/application';
 import { assert } from '@ember/debug';
 import { isNone } from '@ember/utils';
 import { schedule } from '@ember/runloop';
+import { tracked } from '@glimmer/tracking';
 
 const { location } = window;
 
@@ -14,347 +14,277 @@ const { location } = window;
  * State service that manage browser history navigation.
  *
  * When browser navigates it emits events `forward` and `back`.
- *
- * @extends Ember.Service
  */
-export default Service.extend(Evented, {
+export default class StateService extends Service.extend(Evented) {
+  /**
+   * Array with all history states.
+   */
+  @tracked content = A();
 
-	/**
-	 * Array with all history states.
-	 *
-	 * @property content
-	 * @type Array
-	 */
-	content: null,
+  /**
+   * Array with all history states ordered by index.
+   */
+  get states() {
+    return A(this.content.sortBy('index'));
+  }
 
-	/**
-	 * Sorting property of content.
-	 *
-	 * @property contentSorting
-	 * @type Array
-	 */
-	// eslint-disable-next-line ember/avoid-leaking-state-in-ember-objects
-	contentSorting: ['index'],
+  /**
+   * Pointer to the current state.
+   */
+  @tracked pointer;
 
-	/**
-	 * Array with all history states ordered by index.
-	 *
-	 * @property states
-	 * @type Array
-	 */
-	states: sort('content', 'contentSorting'),
+  /**
+   * Check if service should be enabled.
+   */
+  get isEnabled() {
+    const userAgent = window.navigator.userAgent;
 
-	/**
-	 * Pointer to the current state.
-	 *
-	 * @property pointer
-	 * @type Number
-	 */
-	pointer: 0,
+    return !userAgent.match(/CriOS/);
+  }
 
-	/**
-	 * Check if service should be enabled.
-	 *
-	 * @property isEnabled
-	 * @return Boolean
-	 */
-	get isEnabled() {
-		const userAgent = window.navigator.userAgent;
+  /**
+   * Returns the next state of the history.
+   */
+  get next() {
+    const pointer = this.pointer + 1;
 
-		return !userAgent.match(/CriOS/);
-	},
+    return this.content.findBy('index', pointer);
+  }
 
-	/**
-	 * Returns the next state of the history.
-	 *
-	 * @property next
-	 * @type Object
-	 */
-	next: computed('content.[]', 'pointer', function() {
-		const pointer = this.get('pointer') + 1;
+  /**
+   * Returns the current state of the history.
+   */
+  get current() {
+    const pointer = this.pointer;
 
-		return this.get('content').findBy('index', pointer);
-	}),
+    return this.content.findBy('index', pointer);
+  }
 
-	/**
-	 * Returns the current state of the history.
-	 *
-	 * @property current
-	 * @type Object
-	 */
-	current: computed('content.[]', 'pointer', function() {
-		const pointer = this.get('pointer');
+  /**
+   * Returns the previous state of the history.
+   */
+  get previous() {
+    const pointer = this.pointer - 1;
 
-		return this.get('content').findBy('index', pointer);
-	}),
+    return this.content.findBy('index', pointer);
+  }
 
-	/**
-	 * Returns the previous state of the history.
-	 *
-	 * @property previous
-	 * @type Object
-	 */
-	previous: computed('content.[]', 'pointer', function() {
-		const pointer = this.get('pointer') - 1;
+  /**
+   * Returns the last navigated state of the history.
+   */
+  @tracked last;
 
-		return this.get('content').findBy('index', pointer);
-	}),
+  /**
+   * Initialize the service.
+   */
+  constructor(...args) {
+    super(...args);
 
-	/**
-	 * Returns the last navigated state of the history.
-	 *
-	 * @property last
-	 * @type Object
-	 */
-	last: null,
+    if (this.isEnabled) {
+      this._updatePointer();
 
-	/**
-	 * Initialize the service.
-	 *
-	 * @method init
-	 */
-	init(...args) {
-		this._super(...args);
+      window.addEventListener('popstate', this._popstateDidChange);
 
-		this.set('content', A());
+      getOwner(this)
+        .lookup('service:router')
+        .on('routeWillChange', this._routeWillChange);
+      getOwner(this)
+        .lookup('service:router')
+        .on('routeDidChange', this._routeDidChange);
+    }
+  }
 
-		if (this.get('isEnabled')) {
-			this._updatePointer();
+  /**
+   * Unbind pop state listener.
+   */
+  willDestroy() {
+    super.willDestroy();
 
-			window.addEventListener('popstate', this.get('_popstateDidChangeBinding'));
+    if (this.isEnabled) {
+      window.removeEventListener('popstate', this._popstateDidChange);
 
-			getOwner(this).lookup('service:router').on('routeWillChange', this.get('_routeWillChangeBinding'));
-			getOwner(this).lookup('service:router').on('routeDidChange', this.get('_routeDidChangeBinding'));
-		}
-	},
+      getOwner(this)
+        .lookup('service:router')
+        .off('routeWillChange', this._routeWillChange);
+      getOwner(this)
+        .lookup('service:router')
+        .off('routeDidChange', this._routeDidChange);
+    }
+  }
 
-	/**
-	 * Unbind pop state listener.
-	 *
-	 * @method willDestroy
-	 */
-	willDestroy(...args) {
-		this._super(...args);
+  /**
+   * Push state to the history.
+   *
+   * @param {object} state
+   * @param {string} title
+   * @param {string} uri
+   */
+  push(state = {}, title, uri) {
+    assert('state argument must be an object', typeof state === 'object');
 
-		if (this.get('isEnabled')) {
-			window.removeEventListener('popstate', this.get('_popstateDidChangeBinding'));
+    const current = this.current;
 
-			getOwner(this).lookup('service:router').off('routeWillChange', this.get('_routeWillChangeBinding'));
-			getOwner(this).lookup('service:router').off('routeDidChange', this.get('_routeDidChangeBinding'));
-		}
-	},
+    uri = uri || location.hash;
 
-	/**
-	 * Push state to the history.
-	 *
-	 * @method push
-	 * @param  {Object} state
-	 * @param  {String} title
-	 * @param  {String} uri
-	 */
-	push(state = {}, title, uri) {
-		assert('state argument must be an object', typeof state === 'object');
+    this.last = current;
+    this.pointer += 1;
 
-		const current = this.get('current');
+    state.index = this.pointer;
 
-		uri = uri || location.hash;
+    window.history.pushState(state, title, uri);
 
-		this.set('last', current);
+    this._addContent(state);
+  }
 
-		this.incrementProperty('pointer');
+  /**
+   * Replace current state of the history.
+   *
+   * @param {object} state
+   * @param {string} title
+   * @param {string} uri
+   */
+  replace(state, title, uri) {
+    assert('state argument must be an object', typeof state === 'object');
 
-		state.index = this.get('pointer');
+    const current = this.current;
 
-		window.history.pushState(state, title, uri);
+    uri = uri || location.hash;
 
-		this._addContent(state);
-	},
+    state.index = current.index;
 
-	/**
-	 * Replace current state of the history.
-	 *
-	 * @method replace
-	 * @param  {Object} state
-	 * @param  {String} title
-	 * @param  {String} uri
-	 */
-	replace(state, title, uri) {
-		assert('state argument must be an object', typeof state === 'object');
+    window.history.replaceState(state, title, uri);
 
-		const current = this.get('current');
+    this._addContent(state);
+  }
 
-		uri = uri || location.hash;
+  /**
+   * Add state to content removing all newest states.
+   *
+   * @param {object} state
+   * @private
+   */
+  _addContent(state) {
+    let content = this.content;
 
-		state.index = current.index;
+    content = content.reject((object) => object.index >= state.index);
 
-		window.history.replaceState(state, title, uri);
+    content.push(state);
 
-		this._addContent(state);
-	},
+    this.content = A(content);
+  }
 
-	/**
-	 * Add state to content removing all newest states.
-	 *
-	 * @method  _addContent
-	 * @param   {Object}    state
-	 * @private
-	 */
-	_addContent(state) {
-		let content = this.get('content');
+  /**
+   * Manage popstate event.
+   *
+   * @private
+   */
+  @action
+  _popstateDidChange(e) {
+    // Prevent popping manual triggered events.
+    // istanbul ignore if: unable to test
+    if (e.isTrigger) {
+      return;
+    }
 
-		content = content.reject((object) => object.index >= state.index);
+    schedule('routerTransitions', () => {
+      if (this.triggerChange) {
+        this.triggerChange();
+      }
+    });
 
-		content.push(state);
+    // eslint-disable-next-line complexity, max-statements
+    this.triggerChange = (transition) => {
+      const current = this.current;
+      let state = window.history.state;
 
-		this.set('content', A(content));
-	},
+      // Always save current state as last.
+      this.last = current;
+      this.triggerChange = null;
 
-	/**
-	 * Returns a binded popstate method.
-	 *
-	 * @property _popstateDidChangeBinding
-	 * @type Function
-	 */
-	_popstateDidChangeBinding: computed(function() {
-		return this._popstateDidChange.bind(this);
-	}),
+      // If last transition is a replace, then do nothing.
+      if (transition && transition.urlMethod === 'replace') {
+        this._updateState();
 
-	/**
-	 * Manage popstate event.
-	 *
-	 * @method  _popstateDidChange
-	 * @private
-	 */
-	_popstateDidChange(e) {
-		// Prevent popping manual triggered events.
-		// istanbul ignore if: unable to test
-		if (e.isTrigger) {
-			return;
-		}
+        return;
+      }
 
-		schedule('routerTransitions', () => {
-			if (this.triggerChange) {
-				this.triggerChange();
-			}
-		});
+      if (isNone(state) || isNone(state.index)) {
+        this.pointer += 1;
+        state = this._updateState();
+        this._addContent(state);
+        this.trigger('forward', state, current);
 
-		// eslint-disable-next-line complexity, max-statements
-		this.triggerChange = (transition) => {
-			const current = this.get('current');
-			let state = window.history.state;
+        return;
+      }
 
-			// Always save current state as last.
-			this.set('last', current);
-			this.triggerChange = null;
+      // istanbul ignore else
+      if (current && state.index > current.index) {
+        this.pointer += 1;
+        this.trigger('forward', state, current);
+      } else if (current && state.index < current.index) {
+        this.pointer -= 1;
+        this.trigger('back', state, current);
+      }
+    };
+  }
 
-			// If last transition is a replace, then do nothing.
-			if (transition && transition.urlMethod === 'replace') {
-				this._updateState();
+  /**
+   * Generates a new state in the current pointer.
+   *
+   * @private
+   */
+  _updateState() {
+    const state = {
+      index: this.pointer,
+    };
 
-				return;
-			}
+    window.history.replaceState(state, null, location.hash);
 
-			if (isNone(state) || isNone(state.index)) {
-				this.incrementProperty('pointer');
-				state = this._updateState();
-				this._addContent(state);
-				this.trigger('forward', state, current);
+    return state;
+  }
 
-				return;
-			}
+  /**
+   * Update pointer to the current history state.
+   *
+   * @private
+   */
+  _updatePointer() {
+    let state = window.history.state;
 
-			// istanbul ignore else
-			if (current && state.index > current.index) {
-				this.incrementProperty('pointer');
-				this.trigger('forward', state, current);
-			} else if (current && state.index < current.index) {
-				this.decrementProperty('pointer');
-				this.trigger('back', state, current);
-			}
-		};
-	},
+    if (isNone(state) || isNone(state.index)) {
+      this.pointer = window.history.length - 1;
+      state = this._updateState();
+      this._addContent(state);
 
-	/**
-	 * Generates a new state in the current pointer.
-	 *
-	 * @method  _updateState
-	 * @return Object
-	 * @private
-	 */
-	_updateState() {
-		const state = {
-			index: this.get('pointer')
-		};
+      return;
+    }
 
-		window.history.replaceState(state, null, location.hash);
+    this.pointer = state.index;
 
-		return state;
-	},
+    this._addContent(state);
+  }
 
-	/**
-	 * Update pointer to the current history state.
-	 *
-	 * @method  _updatePointer
-	 * @private
-	 */
-	_updatePointer() {
-		let state = window.history.state;
+  /**
+   * Save transition on will transition.
+   *
+   * @param {Object} transition
+   */
+  @action
+  _routeWillChange(transition) {
+    if (this.triggerChange) {
+      this.triggerChange(transition);
+    }
+  }
 
-		if (isNone(state) || isNone(state.index)) {
-			this.set('pointer', window.history.length - 1);
-			state = this._updateState();
-			this._addContent(state);
-
-			return;
-		}
-
-		this.set('pointer', state.index);
-
-		this._addContent(state);
-	},
-
-	/**
-	 * Returns a binded transition will change method.
-	 *
-	 * @property _routeWillChangeBinding
-	 * @return Function
-	 */
-	_routeWillChangeBinding: computed(function() {
-		return this._routeWillChange.bind(this);
-	}),
-
-	/**
-	 * Save transition on will transition.
-	 *
-	 * @method _routeWillChange
-	 * @param  {Object}             transition
-	 */
-	_routeWillChange(transition) {
-		if (this.triggerChange) {
-			this.triggerChange(transition);
-		}
-	},
-
-	/**
-	 * Returns a binded transition did change method.
-	 *
-	 * @property _routeDidChangeBinding
-	 * @return Function
-	 */
-	_routeDidChangeBinding: computed(function() {
-		return this._routeDidChange.bind(this);
-	}),
-
-	/**
-	 * Save transition on did transition.
-	 *
-	 * @method _routeDidChange
-	 * @param  {Object}             transition
-	 */
-	_routeDidChange(transition) {
-		if (this.triggerChange) {
-			this.triggerChange(transition);
-		}
-	}
-
-});
+  /**
+   * Save transition on did transition.
+   *
+   * @param  {Object}             transition
+   */
+  @action
+  _routeDidChange(transition) {
+    if (this.triggerChange) {
+      this.triggerChange(transition);
+    }
+  }
+}

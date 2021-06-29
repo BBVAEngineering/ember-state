@@ -1,7 +1,7 @@
 import { settled } from '@ember/test-helpers';
 
 export default async function back() {
-	window.history.back();
+  window.history.back();
 
-	await settled();
+  await settled();
 }
