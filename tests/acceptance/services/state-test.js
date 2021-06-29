@@ -157,6 +157,39 @@ module('Integration | Service | state', (hooks) => {
     await visit('/bar');
   });
 
+  test('it triggers forward event on push', async function (assert) {
+    assert.expect(4);
+
+    const pointer = this.service.get('current.index');
+
+    await visit('/foo');
+
+    this.service.on('forward', (current, last) => {
+      assert.deepEqual(
+        this.service.get('current'),
+        current,
+        'current objects are equals'
+      );
+      assert.equal(
+        last.index,
+        pointer + 1,
+        'last index points to last state index'
+      );
+      assert.equal(
+        current.index,
+        pointer + 2,
+        'current index points to history index'
+      );
+      assert.equal(
+        this.service.get('previous.index'),
+        pointer + 1,
+        'previous index points to history before current index'
+      );
+    });
+
+    this.service.push({ foo: 'bar' }, 'title');
+  });
+
   test('it triggers both events', async function (assert) {
     assert.expect(8);
 

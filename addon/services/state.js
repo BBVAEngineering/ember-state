@@ -134,6 +134,8 @@ export default class StateService extends Service.extend(Evented) {
     window.history.pushState(state, title, uri);
 
     this._addContent(state);
+
+    this.trigger('forward', state, current);
   }
 
   /**
