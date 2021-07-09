@@ -36,11 +36,8 @@ We can access to the following states:
 Example:
 
 ```javascript
-state: inject.service(),
-
-state.get('current.index');
+state: inject.service(), state.get('current.index');
 state.get('previous.index');
-
 ```
 
 ## Contribute

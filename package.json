@@ -42,6 +42,8 @@
     "lint:hbs:fix": "ember-template-lint . --fix",
     "lint:js": "eslint . --cache --max-warnings 0",
     "lint:js:fix": "eslint . --fix",
+    "lint:style": "prettier --check .",
+    "lint:style:fix": "prettier --write .",
     "posttest": "npm run report-coverage && npm run check-coverage && npm run validate-coverage",
     "prepare": "husky install",
     "report-coverage": "istanbul report --include=coverage/coverage-final.json text",
