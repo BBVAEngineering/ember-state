@@ -13,8 +13,9 @@
 # misc
 /coverage/
 !.*
-.*/
 .eslintcache
+*.html
+*.hbs
 
 # ember-try
 /.node_modules.ember-try/
