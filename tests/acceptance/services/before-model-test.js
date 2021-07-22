@@ -6,83 +6,98 @@ import back from '../../helpers/back';
 import replace from '../../helpers/replace';
 
 module('Integration | Service | before-model', (hooks) => {
-	setupApplicationTest(hooks);
+  setupApplicationTest(hooks);
 
-	hooks.beforeEach(async function() {
-		await visit('/');
+  hooks.beforeEach(async function () {
+    await visit('/');
 
-		this.service = this.owner.lookup('service:state');
-	});
+    this.service = this.owner.lookup('service:state');
+  });
 
-	test('it checks replace in beforeModel', async function(assert) {
-		const pointer = this.service.get('current.index');
+  test('it checks replace in beforeModel', async function (assert) {
+    const pointer = this.service.get('current.index');
 
-		this.owner.register('route:foo', Route.extend({
-			beforeModel() {
-				replace('/bar');
-			}
-		}));
+    this.owner.register(
+      'route:foo',
+      class extends Route {
+        beforeModel() {
+          replace('/bar');
+        }
+      }
+    );
 
-		await visit('/foo');
+    await visit('/foo');
 
-		assert.equal(this.service.get('current.index'), pointer + 1);
-	});
+    assert.equal(this.service.get('current.index'), pointer + 1);
+  });
 
-	test('it checks back after loaded route', async function(assert) {
-		const pointer = this.service.get('current.index');
+  test('it checks back after loaded route', async function (assert) {
+    const pointer = this.service.get('current.index');
 
-		this.owner.register('route:foo', Route.extend({
-			beforeModel() {
-				replace('/bar');
-			}
-		}));
+    this.owner.register(
+      'route:foo',
+      class extends Route {
+        beforeModel() {
+          replace('/bar');
+        }
+      }
+    );
 
-		await visit('/foo');
+    await visit('/foo');
 
-		await back();
+    await back();
 
-		assert.equal(this.service.get('current.index'), pointer);
-	});
+    assert.equal(this.service.get('current.index'), pointer);
+  });
 
-	test('it checks replaceWith in beforeModel', async function(assert) {
-		const pointer = this.service.get('current.index');
+  test('it checks replaceWith in beforeModel', async function (assert) {
+    const pointer = this.service.get('current.index');
 
-		this.owner.register('route:foo', Route.extend({
-			beforeModel() {
-				this.replaceWith('bar');
-			}
-		}));
+    this.owner.register(
+      'route:foo',
+      class extends Route {
+        beforeModel() {
+          this.replaceWith('bar');
+        }
+      }
+    );
 
-		await visit('/foo');
+    await visit('/foo');
 
-		assert.equal(this.service.get('current.index'), pointer + 1);
-	});
+    assert.equal(this.service.get('current.index'), pointer + 1);
+  });
 
-	test('it checks visit in beforeModel', async function(assert) {
-		const pointer = this.service.get('current.index');
+  test('it checks visit in beforeModel', async function (assert) {
+    const pointer = this.service.get('current.index');
 
-		this.owner.register('route:foo', Route.extend({
-			beforeModel() {
-				visit('/bar');
-			}
-		}));
+    this.owner.register(
+      'route:foo',
+      class extends Route {
+        beforeModel() {
+          visit('/bar');
+        }
+      }
+    );
 
-		await visit('/foo');
+    await visit('/foo');
 
-		assert.equal(this.service.get('current.index'), pointer + 2);
-	});
+    assert.equal(this.service.get('current.index'), pointer + 2);
+  });
 
-	test('it checks transitionTo in beforeModel', async function(assert) {
-		const pointer = this.service.get('current.index');
+  test('it checks transitionTo in beforeModel', async function (assert) {
+    const pointer = this.service.get('current.index');
 
-		this.owner.register('route:foo', Route.extend({
-			beforeModel() {
-				this.transitionTo('bar');
-			}
-		}));
+    this.owner.register(
+      'route:foo',
+      class extends Route {
+        beforeModel() {
+          this.transitionTo('bar');
+        }
+      }
+    );
 
-		await visit('/foo');
+    await visit('/foo');
 
-		assert.equal(this.service.get('current.index'), pointer + 2);
-	});
+    assert.equal(this.service.get('current.index'), pointer + 2);
+  });
 });

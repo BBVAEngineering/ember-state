@@ -1,11 +1,9 @@
 # ember-state
 
-[![Build Status](https://travis-ci.org/BBVAEngineering/ember-state.svg?branch=master)](https://travis-ci.org/BBVAEngineering/ember-state)
-[![GitHub version](https://badge.fury.io/gh/BBVAEngineering%2Fember-state.svg)](https://badge.fury.io/gh/BBVAEngineering%2Fember-state)
+[![CI](https://github.com/BBVAEngineering/ember-state/actions/workflows/ci.yml/badge.svg)](https://github.com/BBVAEngineering/ember-state/actions/workflows/ci.yml)
 [![NPM version](https://badge.fury.io/js/ember-state.svg)](https://badge.fury.io/js/ember-state)
-[![Dependency Status](https://david-dm.org/BBVAEngineering/ember-state.svg)](https://david-dm.org/BBVAEngineering/ember-state)
+[![Dependency Status](https://status.david-dm.org/gh/BBVAEngineering/ember-state.svg)](https://david-dm.org/BBVAEngineering/ember-state)
 [![codecov](https://codecov.io/gh/BBVAEngineering/ember-state/branch/master/graph/badge.svg)](https://codecov.io/gh/BBVAEngineering/ember-state)
-[![Greenkeeper badge](https://badges.greenkeeper.io/BBVAEngineering/ember-state.svg)](https://greenkeeper.io/)
 [![Ember Observer Score](https://emberobserver.com/badges/ember-state.svg)](https://emberobserver.com/addons/ember-state)
 
 ## Information
@@ -36,11 +34,8 @@ We can access to the following states:
 Example:
 
 ```javascript
-state: inject.service(),
-
-state.get('current.index');
+state: inject.service(), state.get('current.index');
 state.get('previous.index');
-
 ```
 
 ## Contribute
