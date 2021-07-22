@@ -1,3 +1,20 @@
+# [2.0.0](https://github.com/BBVAEngineering/ember-state/compare/v1.0.1...v2.0.0) (2021-07-22)
+
+
+### Bug Fixes
+
+* add forward event on push ([f1fc38f](https://github.com/BBVAEngineering/ember-state/commit/f1fc38f77bb89d391fe2ef2b6d1fdd9376fc3e0d))
+
+
+### Features
+
+* migrate to octane ([cced112](https://github.com/BBVAEngineering/ember-state/commit/cced112a4e30ccbf78b97da3e14b9777f7e3c4e1))
+
+
+### BREAKING CHANGES
+
+* add support for ember-qunit@5
+
 ## [1.0.1](https://github.com/BBVAEngineering/ember-state/compare/v1.0.0...v1.0.1) (2020-03-30)
 
 ### Bug Fixes
